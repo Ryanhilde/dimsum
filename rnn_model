@@ -1,0 +1,15 @@
+import torch
+import torch.nn as nn
+
+class EnhancedRNNModel(nn.Module):
+    def __init__(self, input_dim, seq_len, output_dim, num_layers=2, hidden_dim=128, dropout=0.1):
+        super(EnhancedRNNModel, self).__init__()
+        self.lstm = nn.LSTM(input_size=input_dim, hidden_size=hidden_dim, 
+                            num_layers=num_layers, batch_first=True, dropout=dropout)
+        self.linear_out = nn.Linear(hidden_dim * seq_len, output_dim)
+
+    def forward(self, src):
+        lstm_output, _ = self.lstm(src)  # Shape: (batch_size, seq_len, hidden_dim)
+        flattened = lstm_output.view(lstm_output.size(0), -1)  # Flatten
+        output = self.linear_out(flattened)
+        return output.view(-1, src.size(1), output_dim)  # Reshape to match expected output
